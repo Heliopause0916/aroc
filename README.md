@@ -37,11 +37,11 @@ Then open Play Store, Root Checker, Ad-Away, etc, etc.
 
 The scripts may either be downloaded and ran locally, or via curl or wget e.g. 
 
-`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/01Root.sh | sudo sh`
+`curl -Ls https://raw.githubusercontent.com/heliopause0916/aroc/master/01Root.sh | sudo sh`
 
 Reboot
 
-`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/02SEPatch.sh | sudo sh`
+`curl -Ls https://raw.githubusercontent.com/heliopause0916/aroc/master/02SEPatch.sh | sudo sh`
 
 Reboot again
 
