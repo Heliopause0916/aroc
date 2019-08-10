@@ -115,7 +115,7 @@ detect_architecture() {
 #fi
 case "$ARCH" in
 x86 | i?86) ANDROID_ARCH="x86";;
-x86_64 | amd64) ANDROID_ARCH="x86";;
+x86_64 | amd64) ANDROID_ARCH="x64";;
 armel) ANDROID_ARCH="armel";;
 arm64 | aarch64) ANDROID_ARCH="armv7";;
 arm*) ANDROID_ARCH="armv7";;
@@ -148,11 +148,13 @@ echo
 if [ $ANDROID_ARCH=armv7 ]; then
   cd /usr/local/Android_Images
   dd if=/dev/zero of=system.raw.expanded.img count=1800000 bs=1024 status=progress
+  echo "1.8GB Size"
   else
 
-  if [ $ANDROID_ARCH=x86 ]; then
+  if [ $ANDROID_ARCH=x86 | x64 ]; then
     cd /usr/local/Android_Images
     dd if=/dev/zero of=system.raw.expanded.img count=2200000 bs=1024 status=progress
+    echo "2.2GB Size"
 
     else
     echo "Error!"
@@ -672,6 +674,12 @@ esac
 case "$ANDROID_ARCH" in
 x86)
 SU_ARCHDIR=/home/chronos/user/Downloads/x86
+;;
+esac
+
+case "$ANDROID_ARCH" in
+x64)
+SU_ARCHDIR=/home/chronos/user/Downloads/x64
 ;;
 esac
 
