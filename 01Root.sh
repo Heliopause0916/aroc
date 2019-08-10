@@ -512,7 +512,9 @@ if [ ! -L /opt/google/containers/android/system.raw.img ]; then
     
 fi
         #ORIGINAL_ANDROID_ROOTFS=/opt/google/containers/android/rootfs/root
-        ANDROID_ROOTFS=/usr/local/Android_Images/Original
+        #ANDROID_ROOTFS=/usr/local/Android_Images/Original
+        ANDROID_ROOTFS=/opt/google/containers/android/rootfs/root
+
 
 # We want to set SELinux to 'Permissive' so we can copy rootfs files with their original contexts without encountering errors.
 # At one point, the ability to 'setenforce' was removed in an OS update. (it was later restored in another update).
