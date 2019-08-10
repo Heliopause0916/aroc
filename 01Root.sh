@@ -376,6 +376,52 @@ cd $system/bin/.ext
 
 }
 
+copy_su_x64() {
+
+echo "Copying su to system/xbin/su,daemonsu,sugote, and setting permissions and contexts"
+
+cd $system/xbin
+
+  cp $SU_ARCHDIR/su.pie $system/xbin/su
+  cp $SU_ARCHDIR/su.pie $system/xbin/daemonsu
+  cp $SU_ARCHDIR/su.pie $system/xbin/sugote
+
+  chmod 0755 $system/xbin/su
+  chmod 0755 $system/xbin/daemonsu
+  chmod 0755 $system/xbin/sugote
+  
+  chown 655360 $system/xbin/su
+  chown 655360 $system/xbin/daemonsu
+  chown 655360 $system/xbin/sugote
+  
+  chgrp 655360 $system/xbin/su
+  chgrp 655360 $system/xbin/daemonsu
+  chgrp 655360 $system/xbin/sugote
+
+  chcon u:object_r:system_file:s0 $system/xbin/su
+  chcon u:object_r:system_file:s0 $system/xbin/daemonsu
+  chcon u:object_r:zygote_exec:s0 $system/xbin/sugote
+
+sleep 0.1
+
+echo "Creating directory system/bin/.ext/.su"
+
+cd $system/bin
+
+  mkdir -p $system/bin/.ext
+
+echo "Copying su to system/bin/.ext/.su and setting permissions and contexts"
+
+cd $system/bin/.ext
+
+  cp $SU_ARCHDIR/su.pie $system/bin/.ext/.su
+  chmod 0755 $system/bin/.ext/.su
+  chcon u:object_r:system_file:s0 $system/bin/.ext/.su
+  chown 655360 $system/bin/.ext/.su
+  chgrp 655360 $system/bin/.ext/.su
+
+}
+
 # Functions end
 
 main() {
@@ -693,6 +739,8 @@ SU_ARCHDIR=/home/chronos/user/Downloads/x64
 ;;
 esac
 
+echo "DIR is $SU_ARCHDIR"
+
 # In case the above doesn't exist, try to download it.
 
 if [ ! -e $SU_ARCHDIR ]; then
@@ -749,13 +797,22 @@ sleep 0.1
 
 case "$ANDROID_ARCH" in
 armv7)
+echo "EXEC copy_su_armv7"
 copy_su_armv7
 ;;
 esac
 
 case "$ANDROID_ARCH" in
 x86)
+echo "EXEC copy_su_x86"
 copy_su_x86
+;;
+esac
+
+case "$ANDROID_ARCH" in
+x64)
+echo "EXEC copy_su_x64"
+copy_su_x64
 ;;
 esac
 
