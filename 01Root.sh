@@ -861,7 +861,7 @@ sed -i '7iimport /init.super.rc' $system/../init.rc
 echo "Substituting '|mount rootfs rootfs / remount bind rw' for '|mount rootfs rootfs / remount bind ro' in existing init.rc"
 echo "A backup of init.rc will be stored as init.rc.old"
 
-sed -i.old 's|mount rootfs rootfs / remount bind ro|mount rootfs rootfs / remount bind rw|g' $arc_system/../init.rc
+sed -i.old 's|mount rootfs rootfs / remount bind ro|mount rootfs rootfs / remount bind rw|g' $system/../init.rc
 
 # SuperSU copying script ends
 
