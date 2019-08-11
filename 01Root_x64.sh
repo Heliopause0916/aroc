@@ -567,7 +567,7 @@ sleep 0.1
 
 copy_su_x64
 
-echo "Copying supolicy to system/xbin, libsupol to system/lib and setting permissions and contexts"
+echo "Copying supolicy to system/xbin, libsupol to system/lib64 and setting permissions and contexts"
 
 cd $system/xbin
 
@@ -578,14 +578,14 @@ cd $system/xbin
   chgrp 655360 $system/xbin/supolicy
   chcon u:object_r:system_file:s0 $system/xbin/supolicy
 
-cd $system/lib
+cd $system/lib64
 
-  cp $SU_ARCHDIR/libsupol.so $system/lib/libsupol.so
+  cp $SU_ARCHDIR/libsupol.so $system/lib64/libsupol.so
 
-  chmod 0644 $system/lib/libsupol.so
-  chown 655360 $system/lib/libsupol.so
-  chgrp 655360 $system/lib/libsupol.so
-  chcon u:object_r:system_file:s0 $system/lib/libsupol.so
+  chmod 0644 $system/lib64/libsupol.so
+  chown 655360 $system/lib64/libsupol.so
+  chgrp 655360 $system/lib64/libsupol.so
+  chcon u:object_r:system_file:s0 $system/lib64/libsupol.so
   
 sleep 0.1
 
