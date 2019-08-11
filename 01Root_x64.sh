@@ -113,8 +113,8 @@ detect_architecture() {
 #if [ -z "$ANDROID_ARCH" ]; then
     #ARCH="`uname -m`"
 #fi
-ARCH="x86"
-ANDROID_ARCH="x86"
+ARCH="x86_64"
+ANDROID_ARCH="x64"
 
 }
 
@@ -134,14 +134,14 @@ echo
 
 # Make the image.
 # For arm, the unsquashed image needs to be at least ~1.3GB (~800MB for Marshmallow).
-# For x86, the unsquashed image needs to be at least ~1.8GB (~1GB for Marshmallow).
-# And for x86-64 containers (e,g, PixelBook), it apparently needs to be somewhat larger still.
+# For x64, the unsquashed image needs to be at least ~1.8GB (~1GB for Marshmallow).
+# And for x64-64 containers (e,g, PixelBook), it apparently needs to be somewhat larger still.
 
 # Since the raw rootfs has increased in size lately, create a blank sparse 2GB image, which should takes only as much space on disk as required.
 
     cd /usr/local/Android_Images
     dd if=/dev/zero of=system.raw.expanded.img count=2200000 bs=1024 status=progress
-    echo "2.2GB, ARCH is x86."
+    echo "2.2GB, ARCH is x64."
 
 echo
 echo "Formatting system.raw.expanded.img as ext4 filesystem"
@@ -160,11 +160,11 @@ fallocate -d /usr/local/Android_Images/system.raw.expanded.img
 
 
 # The following two functions simply copy the architecture-dependent su binary to /system.
-# For arm Chromebooks we need /armv7/su, but for Intel Chromebooks we need /x86/su.pie 
+# For arm Chromebooks we need /armv7/su, but for Intel Chromebooks we need /x64/su.pie 
 
 
 
-copy_su_x86() {
+copy_su_x64() {
 
 echo "Copying su to system/xbin/su,daemonsu,sugote, and setting permissions and contexts"
 
@@ -511,7 +511,7 @@ mount -o loop,rw,sync /usr/local/Android_Images/system.raw.expanded.img /usr/loc
 
 # Set the right directory from which to copy the su binary.
 
-SU_ARCHDIR=/home/chronos/user/Downloads/x86
+SU_ARCHDIR=/home/chronos/user/Downloads/x64
 
 echo "DIR is $SU_ARCHDIR"
 
@@ -525,7 +525,7 @@ echo "DIR is $SU_ARCHDIR"
 #if [ $ANDROID_ARCH=armv7 ]; then
 #              SU_ARCHDIR=/home/chronos/user/Downloads/armv7
 #  else
-#              SU_ARCHDIR=/home/chronos/user/Downloads/x86
+#              SU_ARCHDIR=/home/chronos/user/Downloads/x64
 #fi
 
 # If we downloaded Busybox earlier, we may as well copy it to /system (although we don't need to).
@@ -563,9 +563,9 @@ cd $system/priv-app/SuperSU
 
 sleep 0.1
 
-# For arm Chromebooks we need /armv7/su, but for for Intel Chromebooks we need /x86/su.pie
+# For arm Chromebooks we need /armv7/su, but for for Intel Chromebooks we need /x64/su.pie
 
-copy_su_x86
+copy_su_x64
 
 echo "Copying supolicy to system/xbin, libsupol to system/lib and setting permissions and contexts"
 
