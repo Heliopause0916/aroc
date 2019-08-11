@@ -111,16 +111,10 @@ detect_architecture() {
 # TODO: Test/improve this function
 
 #if [ -z "$ANDROID_ARCH" ]; then
-    ARCH="`uname -m`"
+    #ARCH="`uname -m`"
 #fi
-case "$ARCH" in
-x86 | i?86) ANDROID_ARCH="x86";;
-x86_64 | amd64) ANDROID_ARCH="x64";;
-armel) ANDROID_ARCH="armel";;
-arm64 | aarch64) ANDROID_ARCH="armv7";;
-arm*) ANDROID_ARCH="armv7";;
-*) error 2 "Invalid architecture '$ARCH'.";;
-esac
+ARCH="x86"
+ANDROID_ARCH="x86"
 
 }
 
@@ -145,35 +139,9 @@ echo
 
 # Since the raw rootfs has increased in size lately, create a blank sparse 2GB image, which should takes only as much space on disk as required.
 
-if [ "$ANDROID_ARCH"="armv7" ]; then
-  cd /usr/local/Android_Images
-  dd if=/dev/zero of=system.raw.expanded.img count=1800000 bs=1024 status=progress
-  echo "1.8GB Size, ARCH is armv7."
-  else
-
-  if [ "$ANDROID_ARCH"="x86" ]; then
     cd /usr/local/Android_Images
     dd if=/dev/zero of=system.raw.expanded.img count=2200000 bs=1024 status=progress
     echo "2.2GB, ARCH is x86."
-
-    else
-    
-      if [ "$ANDROID_ARCH"="x64" ]; then
-      cd /usr/local/Android_Images
-      dd if=/dev/zero of=system.raw.expanded.img count=2200000 bs=1024 status=progress
-      echo "2.2GB, ARCH is x64."
-      
-      else
-    
-      echo "Error!"
-      echo "Unable to detect correct architecture!"
-      echo
-      exit 1
-      
-      fi
-  fi
-
-fi
 
 echo
 echo "Formatting system.raw.expanded.img as ext4 filesystem"
@@ -187,148 +155,14 @@ fallocate -d /usr/local/Android_Images/system.raw.expanded.img
 
 }
 
-download_busybox () {
-  
-# Since there doesn't appear to be a built-in zip uncompresser available on the command line, if we need to download SuperSU,
-# we download BusyBox in order to unzip it. We could also install BusyBox in Android w/ its symlinks later, if we want.
 
-if [ ! -e /usr/local/bin/busybox ]; then
-  echo "Downloading BusyBox"
-  mkdir -p /tmp/aroc
-  cd /tmp/aroc
 
-  if [ $ANDROID_ARCH=armv7 ]; then
-   curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
-  else
-  
-   if [ ANDROID_ARCH=x86 ]; then
 
-# Commenting out the x64 Intel version for now as most x64 systems still seem to use a 32 bit Android container.
-# So if we use the 32 bit BusyBox here, copying it to Android should also work on all machines.
-#     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
-     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-i686 -o busybox
-
-    else
-     echo "Error!"
-     echo "Unable to detect correct architecture!"
-     echo
-     exit 1
-     echo
-    fi
-  
-  fi
-
-  echo "Moving BusyBox to /usr/local/bin"
-  mkdir -p /usr/local/bin
-  mv busybox /usr/local/bin/busybox
-  chmod a+x /usr/local/bin/busybox
-fi
-
-}
-
-download_supersu() {
-
-echo "Downloading SuperSU-v2.82-SR3"
-mkdir -p /tmp/aroc
-cd /tmp/aroc
-curl https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -o SuperSU.zip
-
-# Check filesize
-
-supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
-
-if [ $supersu_size = 6918737 ]; then
-  echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
-  /usr/local/bin/busybox unzip SuperSU.zip
-  else
-  echo "Unexpected file size. Trying again..."
-  curl https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -o SuperSU.zip
-fi
-
-# Check filesize again...
-
-supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
-
-if [ $supersu_size = 6918737 ]; then
-  echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
-  /usr/local/bin/busybox unzip SuperSU.zip
-  else
-  echo "Unexpected file size again! You can manually download the SuperSU zip and extract its directories to ~/Downloads. Then run this script again."
-  exit 1
-fi
-
-# Copy the required files over to ~/Downloads
-
-cp -r -a common /home/chronos/user/Downloads
-  
-if [ $ANDROID_ARCH=armv7 ]; then
-  cp -r -a armv7 /home/chronos/user/Downloads
-  else
-    
-  if [ $ANDROID_ARCH=x86 ]; then
-    cp -r -a x86 /home/chronos/user/Downloads
-    else
-    echo "Error!"
-    echo "Unable to detect correct architecture!"
-    echo
-    exit 1
-    echo
-  fi
-  
-fi
-
-}
 
 # The following two functions simply copy the architecture-dependent su binary to /system.
 # For arm Chromebooks we need /armv7/su, but for Intel Chromebooks we need /x86/su.pie 
 
-copy_su_armv7() {
-  
-echo "Copying su to system/xbin/su,daemonsu,sugote, and setting permissions and contexts"
 
-cd $system/xbin
-
-  cp $SU_ARCHDIR/su $system/xbin/su
-  cp $SU_ARCHDIR/su $system/xbin/daemonsu
-  cp $SU_ARCHDIR/su $system/xbin/sugote
-
-  chmod 0755 $system/xbin/su
-  chmod 0755 $system/xbin/daemonsu
-  chmod 0755 $system/xbin/sugote
-  
-  chown 655360 $system/xbin/su
-  chown 655360 $system/xbin/daemonsu
-  chown 655360 $system/xbin/sugote
-  
-  chgrp 655360 $system/xbin/su
-  chgrp 655360 $system/xbin/daemonsu
-  chgrp 655360 $system/xbin/sugote
-
-  chcon u:object_r:system_file:s0 $system/xbin/su
-  chcon u:object_r:system_file:s0 $system/xbin/daemonsu
-  chcon u:object_r:zygote_exec:s0 $system/xbin/sugote
-
-sleep 0.1
-
-echo "Creating directory system/bin/.ext/.su"
-
-cd $system/bin
-
-  mkdir -p $system/bin/.ext
-
-echo "Copying su to system/bin/.ext/.su and setting permissions and contexts"
-
-cd $system/bin/.ext
-
-  cp $SU_ARCHDIR/su $system/bin/.ext/.su
-  chmod 0755 $system/bin/.ext/.su
-  chcon u:object_r:system_file:s0 $system/bin/.ext/.su
-  chown 655360 $system/bin/.ext/.su
-  chgrp 655360 $system/bin/.ext/.su
-
-sleep 0.1
-
-}
 
 copy_su_x86() {
 
@@ -376,51 +210,7 @@ cd $system/bin/.ext
 
 }
 
-copy_su_x64() {
 
-echo "Copying su to system/xbin/su,daemonsu,sugote, and setting permissions and contexts"
-
-cd $system/xbin
-
-  cp $SU_ARCHDIR/su.pie $system/xbin/su
-  cp $SU_ARCHDIR/su.pie $system/xbin/daemonsu
-  cp $SU_ARCHDIR/su.pie $system/xbin/sugote
-
-  chmod 0755 $system/xbin/su
-  chmod 0755 $system/xbin/daemonsu
-  chmod 0755 $system/xbin/sugote
-  
-  chown 655360 $system/xbin/su
-  chown 655360 $system/xbin/daemonsu
-  chown 655360 $system/xbin/sugote
-  
-  chgrp 655360 $system/xbin/su
-  chgrp 655360 $system/xbin/daemonsu
-  chgrp 655360 $system/xbin/sugote
-
-  chcon u:object_r:system_file:s0 $system/xbin/su
-  chcon u:object_r:system_file:s0 $system/xbin/daemonsu
-  chcon u:object_r:zygote_exec:s0 $system/xbin/sugote
-
-sleep 0.1
-
-echo "Creating directory system/bin/.ext/.su"
-
-cd $system/bin
-
-  mkdir -p $system/bin/.ext
-
-echo "Copying su to system/bin/.ext/.su and setting permissions and contexts"
-
-cd $system/bin/.ext
-
-  cp $SU_ARCHDIR/su.pie $system/bin/.ext/.su
-  chmod 0755 $system/bin/.ext/.su
-  chcon u:object_r:system_file:s0 $system/bin/.ext/.su
-  chown 655360 $system/bin/.ext/.su
-  chgrp 655360 $system/bin/.ext/.su
-
-}
 
 # Functions end
 
@@ -721,33 +511,13 @@ mount -o loop,rw,sync /usr/local/Android_Images/system.raw.expanded.img /usr/loc
 
 # Set the right directory from which to copy the su binary.
 
-case "$ANDROID_ARCH" in
-armv7)
-SU_ARCHDIR=/home/chronos/user/Downloads/armv7
-;;
-esac
-
-case "$ANDROID_ARCH" in
-x86)
 SU_ARCHDIR=/home/chronos/user/Downloads/x86
-;;
-esac
-
-case "$ANDROID_ARCH" in
-x64)
-SU_ARCHDIR=/home/chronos/user/Downloads/x64
-;;
-esac
 
 echo "DIR is $SU_ARCHDIR"
 
 # In case the above doesn't exist, try to download it.
 
-if [ ! -e $SU_ARCHDIR ]; then
-  download_busybox
-  
-  download_supersu
-fi
+
               common=/home/chronos/user/Downloads/common
               system=/usr/local/Android_Images/Mounted/system
               #system_original=/opt/google/containers/android/rootfs/root/system
@@ -795,26 +565,7 @@ sleep 0.1
 
 # For arm Chromebooks we need /armv7/su, but for for Intel Chromebooks we need /x86/su.pie
 
-case "$ANDROID_ARCH" in
-armv7)
-echo "EXEC copy_su_armv7"
-copy_su_armv7
-;;
-esac
-
-case "$ANDROID_ARCH" in
-x86)
-echo "EXEC copy_su_x86"
 copy_su_x86
-;;
-esac
-
-case "$ANDROID_ARCH" in
-x64)
-echo "EXEC copy_su_x64"
-copy_su_x64
-;;
-esac
 
 echo "Copying supolicy to system/xbin, libsupol to system/lib and setting permissions and contexts"
 
